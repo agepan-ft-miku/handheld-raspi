@@ -1,0 +1,86 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835";
+
+    fragment@0 {
+		target = <&i2c1>;
+        __overlay__ {
+            #address-cells = <1>;
+            #size-cells = <0>;
+
+            keypad: tca8418@34 {
+                compatible = "ti,tca8418";
+                reg = <0x34>;
+                interrupt-parent = <&gpio>;
+                interrupts = <26 2>; // GPIO6 for interrupt, falling edge
+                key-debounce = <32>; // Debounce time in milliseconds
+
+				/* row << 24 | column << 16 | key-code */
+                linux,keymap = <
+					/* r1~7(7~1), c0(1) */
+                    0x0100001D /* KEY_MIC(RCTRL) */
+                    0x02000039 /* KEY_(spac) */
+                    0x03000038 /* KEY_(LALT) */
+                    0x0400001E /* KEY_A */
+                    0x0500000F /* KEY_SYM(TAB) */
+                    0x06000011 /* KEY_W */
+                    0x07000010 /* KEY_Q */
+					/* r1~7(7~1), c1(2) */
+                    0x0101002A /* KEY_(LSHIFT) */
+                    0x0201002C /* KEY_Z */
+                    0x0301002D /* KEY_X */
+                    0x04010019 /* KEY_P */
+                    0x05010020 /* KEY_D */
+                    0x0601001F /* KEY_S */
+                    0x07010012 /* KEY_E */
+					/* r1~7(7~1), c2(3) */
+                    0x01020021 /* KEY_F */
+                    0x0202002E /* KEY_C */
+                    0x0302002F /* KEY_V */
+                    0x04020036 /* KEY_(RSHIFT) */
+                    0x05020014 /* KEY_T */
+                    0x06020022 /* KEY_G */
+                    0x07020013 /* KEY_R */
+					/* r1~7(7~1), c3(4) */
+                    0x01030024 /* KEY_J */
+                    0x02030031 /* KEY_N */
+                    0x03030030 /* KEY_B */
+                    0x0403001C /* KEY_(ENTER) */
+                    0x05030015 /* KEY_Y */
+                    0x06030023 /* KEY_H */
+                    0x07030016 /* KEY_U */
+					/* r1~7(7~1), c4(5) */
+                    0x01040025 /* KEY_K */
+                    0x02040032 /* KEY_M */
+                    0x03040043 /* KEY_$(backslash) */
+                    0x0404000E /* KEY_(BS) */
+                    0x05040017 /* KEY_I */
+                    0x06040026 /* KEY_L */
+                    0x07040018 /* KEY_O */
+                >;
+                keypad,num-rows = <8>;
+                keypad,num-columns = <5>;
+            };
+        };
+    };
+
+    fragment@1 {
+        target = <&gpio>;
+        __overlay__ {
+            tca8418_pins: tca8418_pins {
+                brcm,pins = <26>; // GPIO6 (interrupt)
+                brcm,function = <0>; // Input mode
+                brcm,pull = <1>; // pull-up
+            };
+        };
+    };
+	fragment@2 {
+        target = <&keypad>; // fragment@0 で定義した 'keypad' ラベルを参照
+        __overlay__ {
+            pinctrl-names = "default";
+            pinctrl-0 = <&tca8418_pins>;
+        };
+    };
+};
